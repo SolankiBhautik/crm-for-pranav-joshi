@@ -127,9 +127,11 @@ export default function HomePage() {
     }
   }, [searchTerm, filters, dateRange, sortConfig, isAuthenticated]);
 
-  // Handle filter changes
   const handleFilterChange = (name, value) => {
-    setFilters(prev => ({ ...prev, [name]: value }));
+    setFilters(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   // Clear all filters
@@ -138,8 +140,10 @@ export default function HomePage() {
       type: '',
       city: '',
       state: '',
-      dateStart: null,
-      dateEnd: null,
+    });
+    setDateRange({
+      start: null,
+      end: null,
     });
     setSearchTerm('');
   };
@@ -250,7 +254,21 @@ export default function HomePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Type filter */}
                 <div className="space-y-2">
-                  <Label>Customer Type</Label>
+                  <div className="flex items-center justify-between h-8">
+                    <Label>Customer Type</Label>
+                    {filters.type && (
+                      <Button
+                        variant="outline"
+                        size='sm'
+                        onClick={() => handleFilterChange('type', '')}
+                        className="rounded hover:bg-accent"
+                        title='Clear selection'
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Clear selection</span>
+                      </Button>
+                    )}
+                  </div>
                   <Select
                     value={filters.type}
                     onValueChange={(value) => handleFilterChange('type', value)}
@@ -259,7 +277,6 @@ export default function HomePage() {
                       <SelectValue placeholder="All types" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ALL">All types</SelectItem>
                       <SelectItem value="BUILDER">Builder</SelectItem>
                       <SelectItem value="BUNGLOW">Bunglow</SelectItem>
                     </SelectContent>
@@ -268,7 +285,21 @@ export default function HomePage() {
 
                 {/* City filter */}
                 <div className="space-y-2">
-                  <Label>City</Label>
+                  <div className="flex items-center justify-between h-8">
+                    <Label>City</Label>
+                    {filters.city && (
+                      <Button
+                        variant="outline"
+                        size='sm'
+                        onClick={() => handleFilterChange('city', '')}
+                        className="rounded hover:bg-accent"
+                        title='Clear selection'
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Clear selection</span>
+                      </Button>
+                    )}
+                  </div>
                   <Select
                     value={filters.city}
                     onValueChange={(value) => handleFilterChange('city', value)}
@@ -287,7 +318,21 @@ export default function HomePage() {
 
                 {/* State filter */}
                 <div className="space-y-2">
-                  <Label>State</Label>
+                  <div className="flex items-center justify-between h-8">
+                    <Label>State</Label>
+                    {filters.state && (
+                      <Button
+                        variant="outline"
+                        size='sm'
+                        onClick={() => handleFilterChange('state', '')}
+                        className="rounded hover:bg-accent"
+                        title='Clear selection'
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Clear selection</span>
+                      </Button>
+                    )}
+                  </div>
                   <Select
                     value={filters.state}
                     onValueChange={(value) => handleFilterChange('state', value)}
@@ -306,7 +351,21 @@ export default function HomePage() {
 
                 {/* Date range filter */}
                 <div className="space-y-2">
-                  <Label>Date Range</Label>
+                  <div className="flex items-center justify-between h-8">
+                    <Label>Date Range</Label>
+                    {(dateRange.from || dateRange.to) && (
+                      <Button
+                        variant="outline"
+                        size='sm'
+                        onClick={() => setDateRange({ start: null, end: null })}
+                        className="rounded hover:bg-accent"
+                        title='Clear selection'
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Clear selection</span>
+                      </Button>
+                    )}
+                  </div>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start text-left font-normal">

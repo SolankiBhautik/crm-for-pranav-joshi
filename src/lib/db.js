@@ -155,58 +155,37 @@ export const getCustomers = async (filterOptions = {}) => {
   try {
     const { searchTerm, type, city, state, dateRange, sortBy, sortDirection } = filterOptions;
 
-    // Start with a base query
+    // Start with a base query and apply only the searchTerm
     let customersQuery = collection(db, 'customers');
-    let constraints = [];
 
-    // Add filters if they exist
-    if (type) {
-      constraints.push(where('type', '==', type));
-    }
-
-    if (city) {
-      constraints.push(where('city', '==', city));
-    }
-
-    if (state) {
-      constraints.push(where('state', '==', state));
-    }
-    
     if (searchTerm) {
-      constraints.push(where('name', '==', searchTerm));
+      // customersQuery = query(customersQuery, where('name', '==', searchTerm));
+      customersQuery = query(
+        customersQuery,
+        where("name", ">=", searchTerm),
+        where("name", "<=", searchTerm + "\uf8ff")
+      );
     }
 
-    // Date filtering will be handled after getting the data
-    // as Firestore doesn't easily support range queries combined with other filters
-
-    // Apply sorting if specified
-    if (sortBy) {
-      customersQuery = query(customersQuery, orderBy(sortBy, sortDirection || 'asc'));
-    }
-
-    // Apply filters if there are any
-    if (constraints.length > 0) {
-      // Firestore has a limitation: we can only use one composite query at a time
-      // So we'll apply one filter in the query and others client-side
-      customersQuery = query(customersQuery, constraints[0]);
-    }
-
+    // Fetch data from Firestore
     const snapshot = await getDocs(customersQuery);
     let customers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // Apply additional filters client-side if necessary
-    if (constraints.length > 1) {
-      constraints.slice(1).forEach(constraint => {
-        const [field, operator, value] = constraint._field.segments.concat([constraint._op, constraint._value]);
-        customers = customers.filter(customer => {
-          if (operator === '==') return customer[field] === value;
-          return true;
-        });
-      });
+    // Apply filters client-side
+    if (type) {
+      customers = customers.filter(customer => customer.type === type);
     }
 
-    // Filter by date range if provided
-    if (dateRange.start || dateRange.end) {
+    if (city) {
+      customers = customers.filter(customer => customer.city === city);
+    }
+
+    if (state) {
+      customers = customers.filter(customer => customer.state === state);
+    }
+
+    // Filter by date range
+    if (dateRange?.start || dateRange?.end) {
       customers = customers.filter(customer => {
         if (!customer.date) return false;
 
@@ -223,12 +202,23 @@ export const getCustomers = async (filterOptions = {}) => {
       });
     }
 
+    // Apply sorting
+    if (sortBy) {
+      customers.sort((a, b) => {
+        const valA = a[sortBy]?.toString().toLowerCase() || "";
+        const valB = b[sortBy]?.toString().toLowerCase() || "";
+
+        return sortDirection === "desc" ? valB.localeCompare(valA) : valA.localeCompare(valB);
+      });
+    }
+
     return customers;
   } catch (error) {
     console.error("Error fetching customers:", error);
     return [];
   }
 };
+
 
 export const getCities = async () => {
   try {

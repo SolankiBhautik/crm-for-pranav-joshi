@@ -46,8 +46,9 @@ export default function HomePage() {
   const { isAuthenticated } = useAuth();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingAddCustomer, setLoadingAddCustomer] = useState(true);
 
-  // Search and filter states
+  // Search and filter states  
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({

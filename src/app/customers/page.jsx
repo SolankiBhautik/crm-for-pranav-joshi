@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-export default function NewCustomerPage() {
+export default function NewCustomerPage() { 
     const router = useRouter();
 
     const handleSubmit = async (data) => {
@@ -29,10 +29,10 @@ export default function NewCustomerPage() {
                 </Link>
                 <div>
                     <h1 className="text-4xl font-bold tracking-tight">New Customer</h1>
-                    <p className="text-muted-foreground">Add a new customer to the system</p>
+                     <p className="text-muted-foreground">Add a new customer to the system</p>
                 </div>
             </div>
-            <div className="max-w-2xl">
+            <div>
                 <CustomerForm onSubmit={handleSubmit} />
             </div>
         </div>

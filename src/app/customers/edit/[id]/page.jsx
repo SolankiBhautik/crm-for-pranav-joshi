@@ -48,7 +48,7 @@ export default async function EditCustomerPage({ params }) {
           </p>
         </div>
       </div>
-      <div className="max-w-2xl">
+      <div >
             <CustomerForm onSubmit={handleSubmit} initialData={plainCustomer} />
       </div>
     </div>

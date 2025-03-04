@@ -34,8 +34,10 @@ const [formData, setFormData] = useState({
     state: '',
     gstNumber: '',
     address: '',
+    status: 'meet',
+    note: '',
     ...initialData
-  });
+  }); 
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -48,7 +50,7 @@ const [formData, setFormData] = useState({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {/* Basic Information */}
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
@@ -72,6 +74,25 @@ const [formData, setFormData] = useState({
             <SelectContent>
               <SelectItem value="BUILDER">Builder</SelectItem>
               <SelectItem value="BUNGLOW">Bunglow</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Status</Label>
+          <Select
+            value={formData.status}
+            onValueChange={(value) => handleChange('status', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="meet">Meet</SelectItem>
+              <SelectItem value="cold">Cold</SelectItem>
+              <SelectItem value="hot">Hot</SelectItem>
+              <SelectItem value="order">Order</SelectItem>
+              <SelectItem value="done">Done</SelectItem>
             </SelectContent>
           </Select>
         </div>

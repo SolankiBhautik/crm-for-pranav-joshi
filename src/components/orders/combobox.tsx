@@ -7,7 +7,14 @@ import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
-export function Combobox({ options = [], onSelect, onCreateOption, placeholder = "Select an option...", className }) {
+export function Combobox({ 
+  options = [], 
+  onSelect, 
+  onCreateOption, 
+  placeholder = "Select an option...", 
+  className,
+  searchBy = "label" // New prop to control search behavior, defaults to "label"
+}) {
     const [open, setOpen] = React.useState(false)
     const [value, setValue] = React.useState("")
     const [inputValue, setInputValue] = React.useState("")
@@ -41,6 +48,20 @@ export function Combobox({ options = [], onSelect, onCreateOption, placeholder =
         }
     }
 
+    // Filter options based on inputValue and searchBy prop
+    const filteredOptions = React.useMemo(() => {
+        if (!inputValue) return options
+        
+        const search = inputValue.toLowerCase()
+        return options.filter(option => {
+            if (searchBy === "value") {
+                return String(option.value).toLowerCase().includes(search)
+            } else {
+                return option.label.toLowerCase().includes(search)
+            }
+        })
+    }, [options, inputValue, searchBy])
+
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -51,7 +72,11 @@ export function Combobox({ options = [], onSelect, onCreateOption, placeholder =
             </PopoverTrigger>
             <PopoverContent className="p-0">
                 <Command>
-                    <CommandInput placeholder="Search company..." value={inputValue} onValueChange={setInputValue} />
+                    <CommandInput 
+                      placeholder={`Search by ${searchBy === 'label' ? 'name' : 'ID'}...`} 
+                      value={inputValue} 
+                      onValueChange={setInputValue} 
+                    />
                     <CommandList>
                         <CommandEmpty>
                             <div className="flex flex-col items-center justify-center p-4">
@@ -63,8 +88,12 @@ export function Combobox({ options = [], onSelect, onCreateOption, placeholder =
                             </div>
                         </CommandEmpty>
                         <CommandGroup>
-                            {options.map((option) => (
-                                <CommandItem key={option.value} value={option.value} onSelect={handleSelect}>
+                            {filteredOptions.map((option) => (
+                                <CommandItem 
+                                  key={option.value} 
+                                  value={searchBy === "label" ? option.label : String(option.value)} 
+                                  onSelect={() => handleSelect(option.value)}
+                                >
                                     <Check className={cn("mr-2 h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")} />
                                     {option.label}
                                 </CommandItem>
@@ -76,4 +105,3 @@ export function Combobox({ options = [], onSelect, onCreateOption, placeholder =
         </Popover>
     )
 }
-

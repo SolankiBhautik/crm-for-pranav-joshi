@@ -41,6 +41,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Loader from '@/components/Loader';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -420,7 +421,7 @@ export default function HomePage() {
       ) : (
         <div className="flex flex-col items-center justify-center space-y-4 p-8 border rounded-lg">
           <div className="text-muted-foreground text-center">
-            {loading ? "Loading customers..." : "No customers found"}
+            {loading ?  <Loader />: "No customers found"}
           </div>
           {!loading && (
             <Link href="/customers" prefetch={true}>

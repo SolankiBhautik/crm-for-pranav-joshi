@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Eye, ChevronUp, ChevronDown, Plus } from "lucide-react";
+import { Pencil, Trash2, Eye, ChevronUp, ChevronDown, Plus, FileText } from "lucide-react";
 import { deleteCustomer } from "@/lib/customer";
 import Link from "next/link";
 import { formatDate } from '@/utils/functions';
@@ -56,7 +56,7 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
   };
 
   if (loading) {
-    return <Loader className="h-96"/>;
+    return <Loader className="h-96" />;
   }
 
   return (
@@ -115,7 +115,7 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
             <TableHead
               className="cursor-pointer hover:text-primary"
               onClick={() => onSort('status')}
-              >
+            >
               <div className="flex items-center">
                 Status
                 {getSortIcon('status')}
@@ -143,12 +143,29 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
               <TableCell>{customer.status ? customer.status : '-'}</TableCell>
               <TableCell className="actions text-right">
                 <div className="flex items-center justify-end">
+
+                  {/* make invoice */}
+                  <div>
+                    <Link href={`/customers/invoice/${customer.id}`} title="make invoice">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        tabIndex={-1}
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+
+                  <span className="w-[2px] h-6 bg-muted rounded"></span>
+
                   {/* add order */}
                   <div>
                     <Link href={`/customers/order/${customer.id}`} title="Add Order">
                       <Button
                         variant="ghost"
                         size="icon"
+                        tabIndex={-1}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -163,6 +180,7 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
                       <Button
                         variant="ghost"
                         size="icon"
+                        tabIndex={-1}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -177,6 +195,7 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
                       <Button
                         variant="ghost"
                         size="icon"
+                        tabIndex={-1}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>

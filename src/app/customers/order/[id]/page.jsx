@@ -5,7 +5,7 @@ import { getCustomerById } from '@/lib/customer';
 import { getCompanies, getCustomerOrders, addCompany, addOrder, TILE_SIZES, GRADES } from '@/lib/order';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Plus, Check, X, House } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Table,
@@ -28,6 +28,7 @@ import Loader from '@/components/Loader';
 
 export default function CustomerOrderPage() {
   const params = useParams();
+  const router = useRouter();
   const [customer, setCustomer] = useState(null);
   const [allCompanies, setAllCompanies] = useState([]);
   const [customerCompanies, setCustomerCompanies] = useState([]);
@@ -44,6 +45,7 @@ export default function CustomerOrderPage() {
     amount: '',
     srNo: 0,
   });
+  
 
   // Group orders by company
   const ordersByCompany = orders.reduce((acc, order) => {
@@ -161,21 +163,8 @@ export default function CustomerOrderPage() {
     setAddingOrderForCompany(null);
   };
 
-  if (loading) return (
-      <Loader className="h-screen"/>
-    );
+  if (loading || !customer) return <Loader className="h-screen"/>
 
-  if (!customer) return (
-    <div className='flex justify-center items-center h-screen'>
-      <Link href="/">
-        <Button
-          size="icon"
-        >
-          <House />
-        </Button>
-      </Link>
-    </div>
-  );
 
   return (
     <div className="container mx-auto py-10">

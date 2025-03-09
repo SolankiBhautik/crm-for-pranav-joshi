@@ -1,24 +1,32 @@
+"use client"
 
-import { getCustomerById, updateCustomer } from '@/lib/db';
+import { getCustomerById, updateCustomer } from '@/lib/customer';
 import CustomerForm from '@/components/customers/customer-form';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { redirect, notFound } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Loading from '@/app/loading';
 
-export default async function EditCustomerPage({ params }) {
-    const id = (await params).id;
-    const customer = await getCustomerById(id);
-    const plainCustomer = {
-        ...customer,
-        visitFactory: customer.visitFactory?.seconds ? new Date(customer.visitFactory.seconds * 1000).toISOString() : null,
-        date: customer.date?.seconds ? new Date(customer.date.seconds * 1000).toISOString() : null,
-    };
+export default function EditCustomerPage() {
+    const params = useParams();
+    const id = params.id;
+
+    const [customer, setCustomer] = useState();
+
+    useEffect(() => {
+      const run = async  () => {
+        const data = await getCustomerById(id);
+        setCustomer(data);
+      }
+      run();
+    }, []);
 
 
   async function handleSubmit(data)  {
-    'use server'
     try {
         await updateCustomer(id, data);
     } catch (error) {
@@ -30,7 +38,7 @@ export default async function EditCustomerPage({ params }) {
   };
 
   if (!customer) {
-      return notFound()
+      return <Loading />
   }
 
   return (
@@ -49,7 +57,7 @@ export default async function EditCustomerPage({ params }) {
         </div>
       </div>
       <div >
-            <CustomerForm onSubmit={handleSubmit} initialData={plainCustomer} />
+        <CustomerForm onSubmit={handleSubmit} customer={customer} />
       </div>
     </div>
   );

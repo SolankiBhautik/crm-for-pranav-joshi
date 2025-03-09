@@ -20,15 +20,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Eye, ChevronUp, ChevronDown } from "lucide-react";
-import { deleteCustomer } from "@/lib/db";
+import { Pencil, Trash2, Eye, ChevronUp, ChevronDown, Plus } from "lucide-react";
+import { deleteCustomer } from "@/lib/customer";
 import Link from "next/link";
 import { formatDate } from '@/utils/functions';
+import Loader from '@/components/Loader';
 
 export default function CustomerTable({ initialCustomers, loading, sortConfig, onSort }) {
   const [customers, setCustomers] = useState(initialCustomers);
-
-  // Update customers when initialCustomers changes
   useEffect(() => {
     setCustomers(initialCustomers);
   }, [initialCustomers]);
@@ -57,7 +56,7 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
   };
 
   if (loading) {
-    return <div className="text-center p-8">Loading...</div>;
+    return <Loader className="h-96"/>;
   }
 
   return (
@@ -65,6 +64,7 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
       <Table>
         <TableHeader>
           <TableRow>
+            {/* Name */}
             <TableHead
               className="cursor-pointer hover:text-primary"
               onClick={() => onSort('name')}
@@ -74,6 +74,8 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
                 {getSortIcon('name')}
               </div>
             </TableHead>
+
+            {/* Type */}
             <TableHead
               className="cursor-pointer hover:text-primary"
               onClick={() => onSort('type')}
@@ -83,7 +85,8 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
                 {getSortIcon('type')}
               </div>
             </TableHead>
-            <TableHead>Mobile</TableHead>
+
+            {/* City */}
             <TableHead
               className="cursor-pointer hover:text-primary"
               onClick={() => onSort('city')}
@@ -93,7 +96,11 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
                 {getSortIcon('city')}
               </div>
             </TableHead>
+
+            {/* Reference */}
             <TableHead>Reference</TableHead>
+
+            {/* Date */}
             <TableHead
               className="cursor-pointer hover:text-primary"
               onClick={() => onSort('date')}
@@ -103,6 +110,19 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
                 {getSortIcon('date')}
               </div>
             </TableHead>
+
+            {/* Status */}
+            <TableHead
+              className="cursor-pointer hover:text-primary"
+              onClick={() => onSort('status')}
+              >
+              <div className="flex items-center">
+                Status
+                {getSortIcon('status')}
+              </div>
+            </TableHead>
+
+            {/* Actions */}
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -117,57 +137,87 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
                   {customer.type}
                 </Badge>
               </TableCell>
-              <TableCell>{customer.mobile ? customer.mobile : '-'}</TableCell>
               <TableCell>{customer.city ? customer.city : '-'}</TableCell>
               <TableCell>{customer.reference ? customer.reference : '-'}</TableCell>
               <TableCell>{customer.date ? formatDate(customer.date) : '-'}</TableCell>
+              <TableCell>{customer.status ? customer.status : '-'}</TableCell>
               <TableCell className="actions text-right">
-                <div className="flex items-center justify-end space-x-2">
-                  <Link href={`/customers/${customer.id}`}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Link href={`/customers/edit/${customer.id}`}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
+                <div className="flex items-center justify-end">
+                  {/* add order */}
+                  <div>
+                    <Link href={`/customers/order/${customer.id}`} title="Add Order">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-destructive hover:text-destructive"
-                        onClick={(e) => e.stopPropagation()}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Plus className="h-4 w-4" />
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Customer</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete {customer.name}? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(customer.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    </Link>
+                  </div>
+
+                  <span className="w-[2px] h-6 bg-muted rounded"></span>
+
+                  {/* view */}
+                  <div>
+                    <Link href={`/customers/${customer.id}`} title="View customer">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+
+                  <span className="w-[2px] h-6 bg-muted rounded"></span>
+
+                  {/* edit */}
+                  <div>
+                    <Link href={`/customers/edit/${customer.id}`} title="Edit customer">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+
+                  <span className="w-[2px] h-6 bg-muted rounded"></span>
+
+                  {/* delete */}
+                  <div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive"
+                          onClick={(e) => e.stopPropagation()}
+                          title="Delete customer"
                         >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete {customer.name}? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(customer.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </TableCell>
             </TableRow>

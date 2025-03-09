@@ -1,4 +1,4 @@
-import { getCustomerById } from "@/lib/db"
+import { getCustomerById } from "@/lib/customer"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"

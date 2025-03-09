@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import CustomerForm from '@/components/customers/customer-form';
-import { addCustomer } from '@/lib/db';
+import { addCustomer } from '@/lib/customer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';

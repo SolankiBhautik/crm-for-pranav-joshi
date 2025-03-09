@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
-import { getCustomers, getCities, getStates } from '@/lib/db';
+import { getCustomers, getCities, getStates } from '@/lib/customer';
 import CustomerTable from '@/components/customers/customer-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,7 +46,6 @@ export default function HomePage() {
   const { isAuthenticated } = useAuth();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingAddCustomer, setLoadingAddCustomer] = useState(true);
 
   // Search and filter states  
   const [searchTerm, setSearchTerm] = useState('');

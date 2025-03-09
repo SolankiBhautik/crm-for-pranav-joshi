@@ -130,7 +130,7 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
           {customers.map((customer) => (
             <TableRow
               key={customer.id}
-              className="cursor-pointer hover:bg-muted/50">
+              className="hover:bg-muted/50">
               <TableCell className="font-medium">{customer.name}</TableCell>
               <TableCell>
                 <Badge variant='secondary'>

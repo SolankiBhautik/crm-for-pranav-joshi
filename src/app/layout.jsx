@@ -1,6 +1,7 @@
 import { Geist } from "next/font/google";
 import { AuthProvider } from "@/context/auth-context";
 import "./globals.css";
+import  { Toaster } from 'react-hot-toast';
 
 const geist = Geist({   
   subsets: ["latin"],
@@ -22,6 +23,15 @@ export default function RootLayout({ children }) {
           <AuthProvider>
             {children}
           </AuthProvider>
+        <Toaster  
+          toastOptions={{
+            className: 'backdrop-blur-md',
+            style: {
+              background: "hsl(var(--primary) / .05)",
+              color: "hsl(var(--primary))",
+            },
+          }}
+          />
       </body>
     </html>
   );

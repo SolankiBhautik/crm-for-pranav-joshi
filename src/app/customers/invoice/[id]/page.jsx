@@ -11,8 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import Loader from "@/components/Loader"
+import { updateOrder } from "@/lib/order"
+import toast from 'react-hot-toast';
 
 export default function CustomerInvoicePage() {
   const params = useParams()
@@ -46,8 +47,8 @@ export default function CustomerInvoicePage() {
           cashRate: 0,
         }
 
-        const sqft = Number(order.boxNumber) * (orderInvoice.sqft ? 1 : 0)
-        const billAmount = calculateBillAmount(order, orderInvoice)
+        const sqft = orderInvoice.sqft || 0;
+        const billAmount = calculateBillAmount(orderInvoice)
         const cashRate = Number(orderInvoice.rate) - Number(orderInvoice.billRate)
         const cashAmount = sqft * cashRate
 
@@ -62,10 +63,10 @@ export default function CustomerInvoicePage() {
   }
 
   // Calculate bill amount for an order
-  const calculateBillAmount = (order, orderInvoice) => {
+  const calculateBillAmount = (orderInvoice) => {
     if (!orderInvoice) return 0
 
-    const sqft = Number(order.boxNumber) * (orderInvoice.sqft ? 1 : 0)
+    const sqft = orderInvoice.sqft || 0;
     const baseAmount = sqft * Number(orderInvoice.billRate)
     const insuAmount = baseAmount * (Number(orderInvoice.insu) / 100)
     const taxAmount = baseAmount * (Number(orderInvoice.tax) / 100)
@@ -110,6 +111,7 @@ export default function CustomerInvoicePage() {
           insu: 0.5, // Default 0.5%
           tax: 18, // Default 18%
           cashRate: 0,
+          ...order
         }
       })
 
@@ -133,36 +135,73 @@ export default function CustomerInvoicePage() {
           ...prev[orderId],
           [field]: value,
         },
+      };
+
+      if (["rate", "billRate", "sqft"].includes(field)) {
+        updatedData[orderId].cashRate =
+          Number(updatedData[orderId].rate) - Number(updatedData[orderId].billRate);
       }
 
-      // Auto-calculate cash rate when rate or bill rate changes
-      if (field === "rate" || field === "billRate" || field === "sqft") {
-        const rate = field === "rate" ? value : updatedData[orderId].rate
-        const billRate = field === "billRate" ? value : updatedData[orderId].billRate
-        // const sqft = field === "sqft" ? value : updatedData[orderId].sqft
-        updatedData[orderId].cashRate = Number(rate) - Number(billRate)
+      return updatedData;
+    });
+  }
+
+  const handleSaveInvoice = async () => {
+    try {
+      // Update each order with its invoice data
+      const updatePromises = orders.map((order) => {
+        const orderInvoiceData = invoiceData[order.id]
+        if (!orderInvoiceData) return null
+
+        // Calculate derived values
+        const sqft = Number(order.boxNumber) * (orderInvoiceData.sqft ? 1 : 0)
+        const billAmount = calculateBillAmount(orderInvoiceData)
+        const cashRate = Number(orderInvoiceData.rate) - Number(orderInvoiceData.billRate)
+        const cashAmount = sqft * cashRate
+
+        // Prepare the data to update
+        const updateData = {
+          ...orderInvoiceData,
+          sqft: orderInvoiceData.sqft,
+          billAmount,
+          cashRate,
+          cashAmount,
+          totalAmount: billAmount + cashAmount,
+          invoiced: true,
+        }
+
+        // Update the order
+        return updateOrder(order.id, updateData)
+      })
+
+      // Wait for all updates to complete
+      
+      const saveDataPromise = async () => {
+       await Promise.all(updatePromises.filter(Boolean))
       }
 
-      return updatedData
-    })
+      toast.promise(saveDataPromise, {
+        loading: 'Loading..',
+        success: 'Invoice Saved',
+        error: 'Error Saving data',
+      });
+
+    } catch (error) {
+      console.error("Error saving invoice:", error)
+      toast.error('Error Saving data');
+    }
   }
 
-  const handleSaveInvoice = () => {
-    // Here you would implement saving the invoice data to your backend
-    console.log("Saving invoice data:", invoiceData)
-    alert("Invoice saved successfully!")
-  }
-
-  if (loading) return <Loader className="h-screen"/>
+  if (loading) return <Loader className="h-screen" />
   if (!customer) return notFound()
 
   const grandTotals = calculateGrandTotals()
-
+  
   return (
     <div className="container mx-auto py-10">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Link href={`/customers/${params.id}`}>
+          <Link href="/">
             <Button variant="ghost" size="icon" className="border">
               <ArrowLeft className="h-5 w-5 text-gray-300" />
             </Button>
@@ -175,7 +214,7 @@ export default function CustomerInvoicePage() {
 
         {/* Grand totals summary */}
         <Card className="w-auto">
-          <CardContent className="p-4">
+          <CardContent className="p-4 px-8">
             <div className="grid grid-cols-4 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Total Boxes</p>
@@ -215,7 +254,7 @@ export default function CustomerInvoicePage() {
 
           return (
             <Card key={company.id}>
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <h2 className="text-2xl font-bold mb-4">{company.name}</h2>
                 <Table>
                   <TableHeader>
@@ -238,8 +277,8 @@ export default function CustomerInvoicePage() {
                   <TableBody>
                     {companyOrders.map((order, index) => {
                       const orderInvoice = invoiceData[order.id] || {}
-                      const sqft = Number(order.boxNumber) * (orderInvoice.sqft ? 1 : 0)
-                      const billAmount = calculateBillAmount(order, orderInvoice)
+                      const sqft = orderInvoice.sqft  || 0
+                      const billAmount = calculateBillAmount(orderInvoice)
                       const cashRate = Number(orderInvoice.rate) - Number(orderInvoice.billRate)
                       const cashAmount = sqft * cashRate
 

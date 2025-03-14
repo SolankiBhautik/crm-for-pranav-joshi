@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Combobox } from '@/components/orders/combobox';
+import { Combobox } from '@/components/combobox';
 import Loader from '@/components/Loader';
 
 export default function CustomerOrderPage() {

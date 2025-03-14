@@ -16,10 +16,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { STATUS } from '@/utils/constants';
+import { Combobox } from '@/components/combobox';
+import { addReference, getReferences } from '@/lib/db'
 
 export default function CustomerForm({ onSubmit, customer = {} }) {
 
-const [formData, setFormData] = useState({
+  const [allReference, setAllReference] = useState([]);
+  const [formData, setFormData] = useState({
     name: '',
     type: 'BUILDER',
     date: new Date(),
@@ -38,6 +42,23 @@ const [formData, setFormData] = useState({
     ...customer
   });
 
+  useEffect(() => {
+    const getData = async () => {
+      const reference = await getReferences();
+      setAllReference(reference)
+    }
+    getData()
+  }, []);
+
+  const  handleReferenceCreate = async (value) => {
+    let name = value.trim();
+    
+    const newRef = await addReference({
+      name: name,
+    })
+
+    setAllReference(prev => [...prev, newRef]);
+  }
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
@@ -119,7 +140,7 @@ const [formData, setFormData] = useState({
               onChange={(e) => handleChange('aadhar', e.target.value)}
             />
           </div>
-          
+
           {/* GST Number */}
           <div className="space-y-2">
             <Label htmlFor="gstNumber">GST Number</Label>
@@ -180,6 +201,19 @@ const [formData, setFormData] = useState({
               </PopoverContent>
             </Popover>
           </div>
+
+          {/* Reference */}
+          <div className="space-y-2">
+            <Label htmlFor='reference'>Reference</Label>
+            <Combobox
+              options={allReference.map(c => ({ label: c.name, value: c.id }))}
+              onSelect={(value) => handleChange('reference', value)}
+              onCreateOption={handleReferenceCreate}
+              placeholder="Search or add Reference..."
+              className="w-full"
+              id="reference"
+            />
+          </div>
         </div>
         <div>
           {/* status */}
@@ -193,11 +227,9 @@ const [formData, setFormData] = useState({
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="meet">Meet</SelectItem>
-                <SelectItem value="cold">Cold</SelectItem>
-                <SelectItem value="hot">Hot</SelectItem>
-                <SelectItem value="order">Order</SelectItem>
-                <SelectItem value="done">Done</SelectItem>
+                {STATUS.map(ele => {
+                  return <SelectItem key={ele.key} value={ele.key}>{ele.value}</SelectItem>
+                })}
               </SelectContent>
             </Select>
           </div>

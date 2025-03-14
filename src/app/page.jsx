@@ -42,8 +42,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Loader from '@/components/Loader';
+import { STATUS } from '@/utils/constants';
 
 export default function HomePage() {
+  
   const { isAuthenticated } = useAuth();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,6 +55,7 @@ export default function HomePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     type: '',
+    status: '',
     city: '',
     state: '',
   });
@@ -86,13 +89,13 @@ export default function HomePage() {
       const states = await getStates();
       setFilterOptions((oldFilterOptions) => ({
         ...oldFilterOptions,
-        states, 
+        states,
       }));
     } catch (error) {
       console.error(error);
     }
   };
-  
+
 
   // Function to fetch data with current filters
   const fetchCustomers = async () => {
@@ -139,6 +142,7 @@ export default function HomePage() {
   const clearFilters = () => {
     setFilters({
       type: '',
+      status: '',
       city: '',
       state: '',
     });
@@ -253,6 +257,7 @@ export default function HomePage() {
           <Card className="border border-border">
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
                 {/* Type filter */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between h-8">
@@ -280,6 +285,38 @@ export default function HomePage() {
                     <SelectContent>
                       <SelectItem value="BUILDER">Builder</SelectItem>
                       <SelectItem value="BUNGLOW">Bunglow</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* status filter */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between h-8">
+                    <Label>Status</Label>
+                    {filters.status && (
+                      <Button
+                        variant="outline"
+                        size='sm'
+                        onClick={() => handleFilterChange('status', '')}
+                        className="rounded hover:bg-accent"
+                        title='Clear selection'
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Clear selection</span>
+                      </Button>
+                    )}
+                  </div>
+                  <Select
+                    value={filters.status}
+                    onValueChange={(value) => handleFilterChange("status", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS.map( ele => {
+                        return <SelectItem key={ele.key} value={ele.key}>{ele.value}</SelectItem>
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -421,7 +458,7 @@ export default function HomePage() {
       ) : (
         <div className="flex flex-col items-center justify-center space-y-4 p-8 border rounded-lg">
           <div className="text-muted-foreground text-center">
-            {loading ?  <Loader />: "No customers found"}
+            {loading ? <Loader /> : "No customers found"}
           </div>
           {!loading && (
             <Link href="/customers" prefetch={true}>

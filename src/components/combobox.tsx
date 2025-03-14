@@ -13,7 +13,8 @@ export function Combobox({
   onCreateOption, 
   placeholder = "Select an option...", 
   className,
-  searchBy = "label" // New prop to control search behavior, defaults to "label"
+  searchBy = "label", // New prop to control search behavior, defaults to "label"
+  id,
 }) {
     const [open, setOpen] = React.useState(false)
     const [value, setValue] = React.useState("")
@@ -65,7 +66,7 @@ export function Combobox({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" role="combobox" aria-expanded={open} className={cn("justify-between", className)}>
+                <Button variant="outline" role="combobox" id={id} aria-expanded={open} className={cn("justify-between", className)}>
                     {inputValue || placeholder}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>

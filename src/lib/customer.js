@@ -1,54 +1,54 @@
 import { db } from './firebase';
 import {
-  collection,
-  doc,
-  addDoc,
-  setDoc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
-  where,
-  increment
+    collection,
+    doc,
+    addDoc,
+    setDoc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    query,
+    orderBy,
+    where,
+    increment
 } from "firebase/firestore";
 
 
 
 export const addCustomer = async (customerData) => {
-  try {
-    const { city, state } = customerData;
+    try {
+        const { city, state } = customerData;
 
-    // Add new customer
-    const docRef = await addDoc(collection(db, 'customers'), {
-      ...customerData,
-    });
+        // Add new customer
+        const docRef = await addDoc(collection(db, 'customers'), {
+            ...customerData,
+        });
 
-    // Ensure city exists in 'cities' collection
-    if (city) {
-      const cityRef = doc(db, "cities", city);
-      const cityDoc = await getDoc(cityRef);
-      if (!cityDoc.exists()) {
-        await setDoc(cityRef, { name: city });
-      }
+        // Ensure city exists in 'cities' collection
+        if (city) {
+            const cityRef = doc(db, "cities", city);
+            const cityDoc = await getDoc(cityRef);
+            if (!cityDoc.exists()) {
+                await setDoc(cityRef, { name: city });
+            }
+        }
+
+        // Ensure state exists in 'states' collection
+        if (state) {
+            const stateRef = doc(db, "states", state);
+            const stateDoc = await getDoc(stateRef);
+            if (!stateDoc.exists()) {
+                await setDoc(stateRef, { name: state });
+            }
+        }
+
+        return { id: docRef.id, ...customerData };
+
+    } catch (error) {
+        console.error("Error adding customer:", error);
+        return null;
     }
-
-    // Ensure state exists in 'states' collection
-    if (state) {
-      const stateRef = doc(db, "states", state);
-      const stateDoc = await getDoc(stateRef);
-      if (!stateDoc.exists()) {
-        await setDoc(stateRef, { name: state });
-      }
-    }
-
-    return { id: docRef.id, ...customerData };
-
-  } catch (error) {
-    console.error("Error adding customer:", error);
-    return null;
-  }
 }
 
 export const updateCustomer = async (id, updatedData) => {
@@ -143,7 +143,7 @@ const removeStateIfUnused = async (state) => {
 
 export const getCustomers = async (filterOptions = {}) => {
     try {
-        const { searchTerm, type, city, state, dateRange, sortBy, sortDirection } = filterOptions;
+        const { searchTerm, type, status, city, state, dateRange, sortBy, sortDirection } = filterOptions;
 
         // Start with a base query and apply only the searchTerm
         let customersQuery = collection(db, 'customers');
@@ -163,6 +163,10 @@ export const getCustomers = async (filterOptions = {}) => {
         // Apply filters client-side
         if (type) {
             customers = customers.filter(customer => customer.type === type);
+        }
+
+        if (status) {
+            customers = customers.filter(customer => customer.status === status);
         }
 
         if (city) {
@@ -227,7 +231,6 @@ export const getStates = async () => {
         return [];
     }
 };
-
 
 export const getCustomerById = async (id) => {
     const docRef = doc(db, 'customers', id);

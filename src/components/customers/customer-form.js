@@ -28,7 +28,7 @@ export default function CustomerForm({ onSubmit, customer = {} }) {
     type: 'BUILDER',
     date: new Date(),
     mobile: '',
-    referenceId: '',
+    reference: '',
     panCard: '',
     partnerMobile: '',
     aadhar: '',
@@ -206,7 +206,7 @@ export default function CustomerForm({ onSubmit, customer = {} }) {
           <div className="space-y-2">
             <Label htmlFor='reference'>Reference</Label>
             <Combobox
-              options={allReference.map(c => ({ label: c.name, value: c.id }))}
+              options={allReference.map(c => ({ label: c.name, value: c.name }))}
               onSelect={(value) => handleChange('reference', value)}
               onCreateOption={handleReferenceCreate}
               placeholder="Search or add Reference..."

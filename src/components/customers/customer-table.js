@@ -138,7 +138,7 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
                 </Badge>
               </TableCell>
               <TableCell>{customer.city ? customer.city : '-'}</TableCell>
-              <TableCell>{customer.reference ? customer.reference : '-'}</TableCell>
+              <TableCell>{customer.reference ? customer.reference.name : '-'}</TableCell>
               <TableCell>{customer.date ? formatDate(customer.date) : '-'}</TableCell>
               <TableCell>{customer.status ? customer.status : '-'}</TableCell>
               <TableCell className="actions text-right">

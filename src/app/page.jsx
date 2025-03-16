@@ -12,7 +12,8 @@ import {
   SlidersHorizontal,
   X,
   ChevronDown,
-  CalendarIcon
+  CalendarIcon,
+  Download
 } from 'lucide-react';
 import LoginForm from '@/components/auth/login-form';
 import Link from 'next/link';
@@ -45,7 +46,7 @@ import Loader from '@/components/Loader';
 import { STATUS } from '@/utils/constants';
 
 export default function HomePage() {
-  
+
   const { isAuthenticated } = useAuth();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -166,6 +167,38 @@ export default function HomePage() {
     });
   };
 
+
+  const exportToCSV = () => {
+    const headers = ['Name', 'Type', 'City', 'Reference', 'Date', 'Status'];
+
+    const csvData = customers.map(customer => [
+      customer.name || '',
+      customer.type || '',
+      customer.city || '-',
+      customer.reference || '-',
+      customer.date ? `${format(new Date(customer.date.seconds * 1000), 'dd-MM-yyyy')}` : '-',
+      customer.status || '-'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `customers-export-${format(new Date(), 'dd-MM-yyyy')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -188,12 +221,18 @@ export default function HomePage() {
             Manage your customer relationships and orders
           </p>
         </div>
-        <Link href="/customers" prefetch={true}>
-          <Button>
-            <PlusCircle className="mr-2 h-6 w-6" />
-            Add Customer
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={exportToCSV} disabled={customers.length === 0 || loading}>
+            <Download className="mr-2 h-5 w-5" />
+            Export
           </Button>
-        </Link>
+          <Link href="/customers" prefetch={true}>
+            <Button>
+              <PlusCircle className="mr-2 h-6 w-6" />
+              Add Customer
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Search and Filter UI */}
@@ -314,7 +353,7 @@ export default function HomePage() {
                       <SelectValue placeholder="All status" />
                     </SelectTrigger>
                     <SelectContent>
-                      {STATUS.map( ele => {
+                      {STATUS.map(ele => {
                         return <SelectItem key={ele.key} value={ele.key}>{ele.value}</SelectItem>
                       })}
                     </SelectContent>

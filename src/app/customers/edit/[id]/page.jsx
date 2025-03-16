@@ -33,7 +33,7 @@ export default function EditCustomerPage() {
         console.error('Error updating customer:', error);
     }
 
-    revalidatePath(`/`)
+    // revalidatePath(`/`)
     redirect(`/`)
   };
 

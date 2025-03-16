@@ -29,7 +29,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default async function CustomerDetailPage({ params }) {
-    const id = params.id
+    const { id } = await params
     const customer = await getCustomerById(id)
     const orders = await getCustomerOrders(id)
 

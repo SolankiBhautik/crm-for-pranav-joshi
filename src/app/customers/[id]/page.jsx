@@ -317,14 +317,22 @@ export default async function CustomerDetailPage({ params }) {
                                                         <TableCell>{order.size}</TableCell>
                                                         <TableCell>{order.grade}</TableCell>
                                                         <TableCell>{order.boxNumber}</TableCell>
-                                                        <TableCell>{order.sqFt}</TableCell>
-                                                        <TableCell>{order.tpRate}</TableCell>
+                                                        <TableCell>{order.sqft}</TableCell>
+                                                        <TableCell>{order.rate}</TableCell>
                                                         <TableCell>{order.billRate}</TableCell>
-                                                        <TableCell>{order.insurance}</TableCell>
+                                                        <TableCell>{order.insu}</TableCell>
                                                         <TableCell>{order.tax}</TableCell>
-                                                        <TableCell>{order.billAmount}</TableCell>
-                                                        <TableCell>{order.cashRate}</TableCell>
-                                                        <TableCell>{order.amount}</TableCell>
+                                                        <TableCell>
+                                                            {(Number(order.boxNumber || 0) * Number(order.sqft || 0) * Number(order.billRate || 0) *
+                                                                (1 + Number(order.insu || 0) / 100) * (1 + Number(order.tax || 0) / 100)).toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {(Number(order.rate || 0) - Number(order.billRate || 0)).toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {(Number(order.boxNumber || 0) * Number(order.sqft || 0) *
+                                                                (Number(order.rate || 0) - Number(order.billRate || 0))).toFixed(2)}
+                                                        </TableCell>
                                                         <TableCell className="text-right">
                                                             <Link href={`/orders/${order.id}`}>
                                                                 <Button variant="ghost" size="sm">

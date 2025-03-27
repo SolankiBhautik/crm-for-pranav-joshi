@@ -2,95 +2,40 @@
 
 import { useState, useEffect } from "react"
 import { getCustomerById } from "@/lib/customer"
-import { getCompanies, getCustomerOrders } from "@/lib/order"
+import { getCompanies, getCustomerOrders, addCompany, addOrder } from "@/lib/order"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Save, Plus, Download } from "lucide-react"
 import { notFound, useParams } from "next/navigation"
 import Link from "next/link"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
 import Loader from "@/components/Loader"
-import { updateOrder } from "@/lib/order"
-import toast from 'react-hot-toast';
+import { toast } from "react-hot-toast"
+import { CompanyCard } from "@/components/invoice/company-card"
+import { AddCompanyForm } from "@/components/invoice/add-company-form"
+import { InvoiceHeader } from "@/components/invoice/invoice-header"
+import { InvoiceTotals } from "@/components/invoice/invoice-totals"
+import ReceiptPDF from "@/components/invoice/receipt-pdf"
+import { PDFDownloadLink } from '@react-pdf/renderer'
 
 export default function CustomerInvoicePage() {
   const params = useParams()
   const [customer, setCustomer] = useState(null)
-  const [companies, setCompanies] = useState([])
+  const [allCompanies, setAllCompanies] = useState([])
+  const [customerCompanies, setCustomerCompanies] = useState([])
   const [orders, setOrders] = useState([])
   const [invoiceData, setInvoiceData] = useState({})
   const [loading, setLoading] = useState(true)
+  const [showAddCompany, setShowAddCompany] = useState(false)
 
-  // Group orders by company
   const ordersByCompany = orders.reduce((acc, order) => {
-    if (!acc[order.companyId]) {
-      acc[order.companyId] = []
-    }
+    acc[order.companyId] = acc[order.companyId] || []
     acc[order.companyId].push(order)
     return acc
   }, {})
 
-  // Calculate totals for a company's orders
-  const calculateCompanyTotals = (companyId) => {
-    const companyOrders = ordersByCompany[companyId] || []
-
-    return companyOrders.reduce(
-      (acc, order) => {
-        const orderInvoice = invoiceData[order.id] || {
-          sqft: false,
-          rate: 0,
-          billRate: 0,
-          insu: 0.5,
-          tax: 18,
-          cashRate: 0,
-        }
-
-        const sqft = orderInvoice.sqft || 0;
-        const billAmount = calculateBillAmount(orderInvoice)
-        const cashRate = Number(orderInvoice.rate) - Number(orderInvoice.billRate)
-        const cashAmount = sqft * cashRate
-
-        return {
-          totalBox: acc.totalBox + Number(order.boxNumber),
-          totalBillAmount: acc.totalBillAmount + billAmount,
-          totalCashAmount: acc.totalCashAmount + cashAmount,
-        }
-      },
-      { totalBox: 0, totalBillAmount: 0, totalCashAmount: 0 },
-    )
-  }
-
-  // Calculate bill amount for an order
-  const calculateBillAmount = (orderInvoice) => {
-    if (!orderInvoice) return 0
-
-    const sqft = orderInvoice.sqft || 0;
-    const baseAmount = sqft * Number(orderInvoice.billRate)
-    const insuAmount = baseAmount * (Number(orderInvoice.insu) / 100)
-    const taxAmount = baseAmount * (Number(orderInvoice.tax) / 100)
-
-    return baseAmount + insuAmount + taxAmount
-  }
-
-  // Calculate grand totals across all companies
-  const calculateGrandTotals = () => {
-    return Object.keys(ordersByCompany).reduce(
-      (acc, companyId) => {
-        const companyTotals = calculateCompanyTotals(companyId)
-        return {
-          totalBox: acc.totalBox + companyTotals.totalBox,
-          totalBillAmount: acc.totalBillAmount + companyTotals.totalBillAmount,
-          totalCashAmount: acc.totalCashAmount + companyTotals.totalCashAmount,
-        }
-      },
-      { totalBox: 0, totalBillAmount: 0, totalCashAmount: 0 },
-    )
-  }
-
-  const loadData = async () => {
+  async function loadData() {
     try {
+      setLoading(true)
       const [customerData, companiesData, ordersData] = await Promise.all([
         getCustomerById(params.id),
         getCompanies(),
@@ -98,26 +43,24 @@ export default function CustomerInvoicePage() {
       ])
 
       setCustomer(customerData)
-      setCompanies(companiesData)
+      setAllCompanies(companiesData)
+      setCustomerCompanies(companiesData.filter(c => ordersData.some(o => o.companyId === c.id)))
       setOrders(ordersData)
-
-      // Initialize invoice data for each order
+      
       const initialInvoiceData = {}
-      ordersData.forEach((order) => {
+      ordersData.forEach(order => {
         initialInvoiceData[order.id] = {
-          sqft: false,
-          rate: 0,
-          billRate: 0,
-          insu: 0.5, // Default 0.5%
-          tax: 18, // Default 18%
-          cashRate: 0,
-          ...order
+          sqft: order.sqft || "27.55",
+          rate: order.rate || "0",
+          billRate: order.billRate || "0",
+          insu: order.insu || "0.5",
+          tax: order.tax || "18",
         }
       })
-
       setInvoiceData(initialInvoiceData)
     } catch (error) {
       console.error("Error loading data:", error)
+      toast.error("Failed to load data")
     } finally {
       setLoading(false)
     }
@@ -127,263 +70,135 @@ export default function CustomerInvoicePage() {
     loadData()
   }, [params.id])
 
-  const handleInvoiceDataChange = (orderId, field, value) => {
-    setInvoiceData((prev) => {
-      const updatedData = {
-        ...prev,
-        [orderId]: {
-          ...prev[orderId],
-          [field]: value,
-        },
-      };
-
-      if (["rate", "billRate", "sqft"].includes(field)) {
-        updatedData[orderId].cashRate =
-          Number(updatedData[orderId].rate) - Number(updatedData[orderId].billRate);
-      }
-
-      return updatedData;
-    });
+  function handleInvoiceDataChange(orderId, field, value) {
+    setInvoiceData(prev => ({
+      ...prev,
+      [orderId]: { ...prev[orderId], [field]: value }
+    }))
   }
 
-  const handleSaveInvoice = async () => {
+  async function handleAddCompany(value) {
     try {
-      // Update each order with its invoice data
-      const updatePromises = orders.map((order) => {
-        const orderInvoiceData = invoiceData[order.id]
-        if (!orderInvoiceData) return null
-
-        // Calculate derived values
-        const sqft = Number(order.boxNumber) * (orderInvoiceData.sqft ? 1 : 0)
-        const billAmount = calculateBillAmount(orderInvoiceData)
-        const cashRate = Number(orderInvoiceData.rate) - Number(orderInvoiceData.billRate)
-        const cashAmount = sqft * cashRate
-
-        // Prepare the data to update
-        const updateData = {
-          ...orderInvoiceData,
-          sqft: orderInvoiceData.sqft,
-          billAmount,
-          cashRate,
-          cashAmount,
-          totalAmount: billAmount + cashAmount,
-          invoiced: true,
+      const existingCompany = allCompanies.find(c => c.name.toLowerCase() === value.toLowerCase())
+      if (existingCompany) {
+        if (!customerCompanies.some(c => c.id === existingCompany.id)) {
+          setCustomerCompanies(prev => [...prev, existingCompany])
+          await loadData()
         }
-
-        // Update the order
-        return updateOrder(order.id, updateData)
-      })
-
-      // Wait for all updates to complete
-      
-      const saveDataPromise = async () => {
-       await Promise.all(updatePromises.filter(Boolean))
+        setShowAddCompany(false)
+        return existingCompany
       }
 
-      toast.promise(saveDataPromise, {
-        loading: 'Loading..',
-        success: 'Invoice Saved',
-        error: 'Error Saving data',
-      });
-
+      const newCompany = await addCompany(value)
+      setAllCompanies(prev => [...prev, newCompany])
+      setCustomerCompanies(prev => [...prev, newCompany])
+      await loadData()
+      setShowAddCompany(false)
+      return newCompany
     } catch (error) {
-      console.error("Error saving invoice:", error)
-      toast.error('Error Saving data');
+      console.error("Error adding company:", error)
+      toast.error("Failed to add company")
+      return null
+    }
+  }
+
+  async function handleSelectCompany(companyId) {
+    console.log('Enter company');
+    const selectedCompany = allCompanies.find(c => c.id === companyId)
+    if (selectedCompany && !customerCompanies.some(c => c.id === selectedCompany.id)) {
+      // Add the company to customerCompanies
+      setCustomerCompanies(prev => [...prev, selectedCompany])
+
+      // Create an empty order for the selected company
+      const newOrder = {
+        companyId: selectedCompany.id,
+        customerId: params.id,
+        name: "",
+        size: "",
+        grade: "PRE",
+        boxNumber: 0,
+        tpRate: 0,
+        amount: 0,
+        srNo: (ordersByCompany[selectedCompany.id]?.length || 0) + 1,
+        sqft: "27.55",
+        rate: 0,
+        billRate: 0,
+        insu: "0.50",
+        tax: 18,
+      }
+
+      // Add the order to the backend and get the created order with an ID
+      const createdOrder = await addOrder(params.id, newOrder)
+      
+      // Update local state with the new order
+      setOrders(prev => [...prev, createdOrder])
+      setInvoiceData(prev => ({
+        ...prev,
+        [createdOrder.id]: {
+          sqft: 27.55,
+          rate: 0,
+          billRate: 0,
+          insu: 0.5,
+          tax: 18,
+        }
+      }))
+
+      // Pass the new order ID to CompanyCard to set it as editing
+      setShowAddCompany(false)
     }
   }
 
   if (loading) return <Loader className="h-screen" />
   if (!customer) return notFound()
-
-  const grandTotals = calculateGrandTotals()
-  
   return (
     <div className="container mx-auto py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <Button variant="ghost" size="icon" className="border">
-              <ArrowLeft className="h-5 w-5 text-gray-300" />
+      <InvoiceHeader customer={customer} params={params} />
+      <InvoiceTotals ordersByCompany={ordersByCompany} invoiceData={invoiceData} />
+      
+      <div className="flex justify-between items-center mb-6">
+        {showAddCompany ? (
+          <AddCompanyForm
+            allCompanies={allCompanies}
+            handleAddCompany={handleAddCompany}
+            handleCompanySelect={handleSelectCompany}
+            onCancel={() => setShowAddCompany(false)}
+          />
+        ) : (
+          <Button variant="outline" onClick={() => setShowAddCompany(true)}>
+            <Plus className="h-4 w-4 mr-2" /> Add Company
+          </Button>
+        )}
+        <PDFDownloadLink
+          document={<ReceiptPDF customer={customer} ordersByCompany={ordersByCompany} customerCompanies={customerCompanies} />}
+          fileName={`Receipt_${customer.name}_${new Date().toISOString().split('T')[0]}.pdf`}
+        >
+          {({ loading }) => (
+            <Button disabled={loading}>
+              <Download className="h-4 w-4 mr-2" />
+              {loading ? 'Generating PDF...' : 'Download Receipt'}
             </Button>
-          </Link>
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">{customer.name}</h1>
-            <p className="text-muted-foreground">Invoice</p>
-          </div>
-        </div>
-
-        {/* Grand totals summary */}
-        <Card className="w-auto">
-          <CardContent className="p-4 px-8">
-            <div className="grid grid-cols-4 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Total Boxes</p>
-                <p className="text-xl font-bold">{grandTotals.totalBox}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Total Bill</p>
-                <p className="text-xl font-bold">₹{grandTotals.totalBillAmount.toFixed(2)}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Total Cash</p>
-                <p className="text-xl font-bold">₹{grandTotals.totalCashAmount.toFixed(2)}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Final Total</p>
-                <p className="text-xl font-bold">
-                  ₹{(grandTotals.totalBillAmount + grandTotals.totalCashAmount).toFixed(2)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex justify-end mb-4">
-        <Button onClick={handleSaveInvoice}>
-          <Save className="h-4 w-4 mr-2" /> Save Invoice
-        </Button>
+          )}
+        </PDFDownloadLink>
       </div>
 
       <div className="space-y-8">
-        {companies.map((company) => {
-          const companyOrders = ordersByCompany[company.id] || []
-          if (companyOrders.length === 0) return null
-
-          const companyTotals = calculateCompanyTotals(company.id)
-
-          return (
-            <Card key={company.id}>
-              <CardContent className="p-4">
-                <h2 className="text-2xl font-bold mb-4">{company.name}</h2>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">Sr.</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Size</TableHead>
-                      <TableHead>Grade</TableHead>
-                      <TableHead>Box</TableHead>
-                      <TableHead>Sq.Ft</TableHead>
-                      <TableHead>Rate</TableHead>
-                      <TableHead>Bill Rate</TableHead>
-                      <TableHead>Insu.</TableHead>
-                      <TableHead>Tax</TableHead>
-                      <TableHead>Bill Amount</TableHead>
-                      <TableHead>Cash Rate</TableHead>
-                      <TableHead>Cash Amount</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {companyOrders.map((order, index) => {
-                      const orderInvoice = invoiceData[order.id] || {}
-                      const sqft = orderInvoice.sqft  || 0
-                      const billAmount = calculateBillAmount(orderInvoice)
-                      const cashRate = Number(orderInvoice.rate) - Number(orderInvoice.billRate)
-                      const cashAmount = sqft * cashRate
-
-                      return (
-                        <TableRow key={order.id}>
-                          <TableCell>{order.srNo || index + 1}</TableCell>
-                          <TableCell>{order.name}</TableCell>
-                          <TableCell>{order.size}</TableCell>
-                          <TableCell>{order.grade}</TableCell>
-                          <TableCell>{order.boxNumber}</TableCell>
-                          <TableCell>
-                            <Select
-                              value={orderInvoice.sqft?.toString() || "27.55"}
-                              onValueChange={(value) => handleInvoiceDataChange(order.id, "sqft", value)}
-                            >
-                              <SelectTrigger className="h-8 w-[100px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="27.55">27.55%</SelectItem>
-                                <SelectItem value="15.5">15.5%</SelectItem>
-                                <SelectItem value="8.67">8.67%</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              value={orderInvoice.rate || ""}
-                              onChange={(e) => handleInvoiceDataChange(order.id, "rate", e.target.value)}
-                              className="h-8 w-20"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              value={orderInvoice.billRate || ""}
-                              onChange={(e) => handleInvoiceDataChange(order.id, "billRate", e.target.value)}
-                              className="h-8 w-20"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={orderInvoice.insu?.toString() || "0.5"}
-                              onValueChange={(value) => handleInvoiceDataChange(order.id, "insu", value)}
-                            >
-                              <SelectTrigger className="h-8 w-20">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1">1%</SelectItem>
-                                <SelectItem value="0.5">0.50%</SelectItem>
-                                <SelectItem value="0.3">0.30%</SelectItem>
-                                <SelectItem value="0.25">0.25%</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              value={orderInvoice.tax || "18"}
-                              onChange={(e) => handleInvoiceDataChange(order.id, "tax", e.target.value)}
-                              className="h-8 w-20"
-                            />
-                          </TableCell>
-                          <TableCell>{billAmount.toFixed(2)}</TableCell>
-                          <TableCell>{cashRate.toFixed(2)}</TableCell>
-                          <TableCell>{cashAmount.toFixed(2)}</TableCell>
-                        </TableRow>
-                      )
-                    })}
-
-                    {/* Company totals */}
-                    <TableRow className="bg-muted/50 font-medium">
-                      <TableCell colSpan={4} className="text-right">
-                        Total:
-                      </TableCell>
-                      <TableCell>{companyTotals.totalBox}</TableCell>
-                      <TableCell colSpan={5}></TableCell>
-                      <TableCell>{companyTotals.totalBillAmount.toFixed(2)}</TableCell>
-                      <TableCell></TableCell>
-                      <TableCell>{companyTotals.totalCashAmount.toFixed(2)}</TableCell>
-                    </TableRow>
-                    <TableRow className="bg-muted/50 font-medium">
-                      <TableCell colSpan={11} className="text-right">
-                        Final Total:
-                      </TableCell>
-                      <TableCell colSpan={2}>
-                        {(companyTotals.totalBillAmount + companyTotals.totalCashAmount).toFixed(2)}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          )
-        })}
-
-        {Object.keys(ordersByCompany).length === 0 && (
+        {customerCompanies.map(company => (
+          <CompanyCard
+            key={company.id}
+            customer={customer}
+            company={company}
+            orders={ordersByCompany[company.id] || []}
+            invoiceData={invoiceData}
+            onInvoiceDataChange={handleInvoiceDataChange}
+            onDataChange={loadData}
+          />
+        ))}
+        {customerCompanies.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
-            No orders found for this customer. Please add orders first.
+            No companies added yet. Add a company to start creating orders.
           </div>
         )}
       </div>
     </div>
   )
 }
-

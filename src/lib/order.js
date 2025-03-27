@@ -38,6 +38,23 @@ export const updateOrder = async (id, orderData) => {
   await updateDoc(docRef, orderData);
 };
 
+export const deleteOrder = async (id) => {
+    try {
+        const orderRef = doc(db, 'orders', id);
+        const orderSnap = await getDoc(orderRef);
+
+        if (!orderSnap.exists()) {
+            console.error("order not found");
+            return;
+        }
+        // Delete order document
+        await deleteDoc(orderRef);
+    } catch (error) {
+        console.error("Error deleting order:", error);
+    }
+};
+
+
 export const getCustomerOrders = async (customerId) => {
   const ordersRef = collection(db, 'orders');
   const q = query(ordersRef, where('customerId', '==', customerId));
@@ -67,6 +84,6 @@ export const TILE_SIZES = [
 ];
 
 export const GRADES = [
-    'PER',
+    'PRE',
     'STD'
 ];

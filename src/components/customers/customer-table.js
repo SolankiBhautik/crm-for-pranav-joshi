@@ -159,21 +159,6 @@ export default function CustomerTable({ initialCustomers, loading, sortConfig, o
 
                   <span className="w-[2px] h-6 bg-muted rounded"></span>
 
-                  {/* add order */}
-                  <div>
-                    <Link href={`/customers/order/${customer.id}`} title="Add Order">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        tabIndex={-1}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <span className="w-[2px] h-6 bg-muted rounded"></span>
-
                   {/* view */}
                   <div>
                     <Link href={`/customers/${customer.id}`} title="View customer">

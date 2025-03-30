@@ -6,22 +6,43 @@ const styles = StyleSheet.create({
     page: { padding: 30, fontSize: 12, fontFamily: 'Helvetica' },
     header: { marginBottom: 20, textAlign: 'center' },
     title: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
-    customerInfo: { marginBottom: 20, borderWidth: 1, padding: 10 },
+    customerInfo: { marginBottom: 20, borderWidth: 1, padding: 10, borderRadius: 4, },
     infoRow: { flexDirection: 'row', gap: 2, marginBottom: 5 },
     infoLabel: { fontWeight: 'bold' },
     section: { marginBottom: 20 },
     companyTitle: { fontSize: 14, fontWeight: 'bold', marginBottom: 10 },
-    table: { borderWidth: 1, marginBottom: 10, fontSize: 8 },
-    tableHeader: { backgroundColor: '#f0f0f0', flexDirection: 'row', borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#000' },
+    table: { borderWidth: 1, marginBottom: 10, fontSize: 8, borderRadius: 4, overflow: 'hidden' },
+    tableHeader: { backgroundColor: '#f5f5f5', flexDirection: 'row', borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#000', borderTopLeftRadius: 4, borderTopRightRadius: 4 },
     tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#000', fontSize: 8 },
     tableCell: { padding: 5, flex: 1, textAlign: 'center', fontSize: 8 },
     tableCellHeader: { padding: 5, flex: 1, textAlign: 'center', fontWeight: 'bold', fontSize: 8 },
-    summaryRow: { flexDirection: 'row', backgroundColor: '#e0e0e0', fontSize: 8, fontWeight: 'bold' },
+    summaryRow: { flexDirection: 'row', backgroundColor: '#e0e0e0', fontSize: 8, fontWeight: 'bold', },
+    LastSummaryRow: { flexDirection: 'row', backgroundColor: '#e0e0e0', fontSize: 8, fontWeight: 'bold', borderBottomLeftRadius: 4, borderBottomRightRadius: 4 },
     finalSummaryRow: { flexDirection: 'row', backgroundColor: '#e0e0e0', fontSize: 8, fontWeight: 'bold' },
     summaryCell: { padding: 5, textAlign: 'center', fontSize: 8 },
     highlight: { fontSize: 14, fontWeight: 'bold', margin: 10, borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#000', paddingBottom: 4, width: 'auto' },
-    FinalHighlight: { fontSize: 14, fontWeight: 'bold', margin: 10 },
-    TotalSection: { marginTop: 10, borderWidth: 1, paddingTop: 10, backgroundColor: '#f0f0f0' },
+    totalSection: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        padding: 16,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 4,
+        borderWidth: 1,
+    },
+    amountContainer: {
+        alignItems: 'center',
+        flex: 1,
+    },
+    title: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 4,
+    },
+    amount: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#333',
+    },
 });
 
 const calculateBillAmount = (order) => {
@@ -140,7 +161,7 @@ const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => {
                                     <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}>{companyTotals.totalCashAmount.toFixed(2)}</Text>
                                 </View>
-                                <View style={styles.summaryRow}> 
+                                <View style={styles.LastSummaryRow}> 
                                     <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}></Text>
@@ -152,11 +173,21 @@ const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => {
                     );
                 })}
 
-                <View style={styles.TotalSection}>
-                    <Text style={styles.highlight}>Total Bill Amount: {totalBillAmount.toFixed(2)}</Text>
-                    <Text style={styles.highlight}>Total Cash Amount: {totalCashAmount.toFixed(2)}</Text>
-                    <Text style={styles.FinalHighlight}>Total Amount: {(totalBillAmount + totalCashAmount).toFixed(2)}</Text>
+                <View style={styles.totalSection}>
+                    <View style={styles.amountContainer}>
+                        <Text style={styles.title}>Total Bill</Text>
+                        <Text style={styles.amount}>{totalBillAmount.toFixed(2)}</Text>
+                    </View>
+                    <View style={styles.amountContainer}>
+                        <Text style={styles.title}>Total Cash</Text>
+                        <Text style={styles.amount}>{totalCashAmount.toFixed(2)}</Text>
+                    </View>
+                    <View style={styles.amountContainer}>
+                        <Text style={styles.title}>Grand Total</Text>
+                        <Text style={styles.amount}>{(totalBillAmount + totalCashAmount).toFixed(2)}</Text>
+                    </View>
                 </View>
+
             </Page>
         </Document>
     );

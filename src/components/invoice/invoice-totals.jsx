@@ -40,11 +40,7 @@ export function InvoiceTotals({ ordersByCompany, invoiceData }) {
   return (
     <Card className="w-full mb-8">
       <CardContent className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Total Boxes</p>
-            <p className="text-xl font-bold text-foreground">{totals.totalBox}</p>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Total Bill</p>
             <p className="text-xl font-bold text-foreground">₹{totals.totalBillAmount.toFixed(2)}</p>
@@ -54,7 +50,7 @@ export function InvoiceTotals({ ordersByCompany, invoiceData }) {
             <p className="text-xl font-bold text-foreground">₹{totals.totalCashAmount.toFixed(2)}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Final Total</p>
+            <p className="text-sm text-muted-foreground">Total Amount</p>
             <p className="text-xl font-bold text-primary">
               ₹{(totals.totalBillAmount + totals.totalCashAmount).toFixed(2)}
             </p>

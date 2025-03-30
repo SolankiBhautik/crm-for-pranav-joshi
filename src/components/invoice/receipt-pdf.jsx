@@ -12,13 +12,18 @@ const styles = StyleSheet.create({
     section: { marginBottom: 20 },
     companyTitle: { fontSize: 14, fontWeight: 'bold', marginBottom: 10 },
     table: { borderWidth: 1, marginBottom: 10, fontSize: 8 },
-    tableHeader: { backgroundColor: '#f0f0f0', flexDirection: 'row', borderBottom: 1 },
-    tableRow: { flexDirection: 'row', borderBottom: 1, fontSize: 8 },
+    tableHeader: { backgroundColor: '#f0f0f0', flexDirection: 'row', borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#000' },
+    tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#000', fontSize: 8 },
     tableCell: { padding: 5, flex: 1, textAlign: 'center', fontSize: 8 },
     tableCellHeader: { padding: 5, flex: 1, textAlign: 'center', fontWeight: 'bold', fontSize: 8 },
+    summaryRow: { flexDirection: 'row', backgroundColor: '#e0e0e0', fontSize: 8, fontWeight: 'bold' },
+    finalSummaryRow: { flexDirection: 'row', backgroundColor: '#e0e0e0', fontSize: 8, fontWeight: 'bold' },
+    summaryCell: { padding: 5, textAlign: 'center', fontSize: 8 },
+    highlight: { fontSize: 14, fontWeight: 'bold', margin: 10, borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#000', paddingBottom: 4, width: 'auto' },
+    FinalHighlight: { fontSize: 14, fontWeight: 'bold', margin: 10 },
+    TotalSection: { marginTop: 10, borderWidth: 1, paddingTop: 10, backgroundColor: '#f0f0f0' },
 });
 
-// Calculate bill amount, cash rate, and cash amount
 const calculateBillAmount = (order) => {
     const boxNumber = Number(order.boxNumber || 0);
     const sqft = Number(order.sqft || 0);
@@ -29,140 +34,132 @@ const calculateBillAmount = (order) => {
     const insuAmount = baseAmount * insu;
     const subtotal = baseAmount + insuAmount;
     const taxAmount = subtotal * tax;
-    return (baseAmount + insuAmount + taxAmount).toFixed(2);
+    return baseAmount + insuAmount + taxAmount;
 };
 
 const calculateCashRate = (order) => {
-    return (Number(order.rate || 0) - Number(order.billRate || 0)).toFixed(2);
+    return Number(order.rate || 0) - Number(order.billRate || 0);
 };
 
 const calculateCashAmount = (order) => {
     const boxNumber = Number(order.boxNumber || 0);
     const sqft = Number(order.sqft || 0);
     const cashRate = Number(order.rate || 0) - Number(order.billRate || 0);
-    return (boxNumber * sqft * cashRate).toFixed(2);
+    return boxNumber * sqft * cashRate;
 };
 
-const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => (
-    <Document>
-        <Page style={styles.page}>
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.title}>Order Receipt</Text>
-            </View>
+const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => {
+    let totalBox = 0;
+    let totalBillAmount = 0;
+    let totalCashAmount = 0;
 
-            {/* Customer Information */}
-            <View style={styles.customerInfo}>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Name:</Text>
-                    <Text>{customer.name}</Text>
+    return (
+        <Document>
+            <Page style={styles.page}>
+                <View style={styles.header}>
+                    <Text style={styles.title}>Order Receipt</Text>
                 </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Aadhar:</Text>
-                    <Text>{customer.aadhar}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Address:</Text>
-                    <Text>{customer.address}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>City:</Text>
-                    <Text>{customer.city}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>District:</Text>
-                    <Text>{customer.district}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>State:</Text>
-                    <Text>{customer.state}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Mobile:</Text>
-                    <Text>{customer.mobile}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Partner Mobile:</Text>
-                    <Text>{customer.partnerMobile || 'N/A'}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>GST Number:</Text>
-                    <Text>{customer.gstNumber || 'N/A'}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>PAN Card:</Text>
-                    <Text>{customer.panCard}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Reference:</Text>
-                    <Text>{customer.reference}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Date:</Text>
-                    <Text>{new Date(customer.date).toLocaleString()}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Note:</Text>
-                    <Text>{customer.note}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Status:</Text>
-                    <Text>{customer.status}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Type:</Text>
-                    <Text>{customer.type}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Total Amount:</Text>
-                    <Text>₹{customer.totalAmount.toFixed(2)}</Text>
-                </View>
-            </View>
 
-            {/* Company Tables */}
-            {customerCompanies.map(company => (
-                <View key={company.id} style={styles.section}> 
-                    <Text style={styles.companyTitle}>{company.name}</Text>
-                    <View style={styles.table}>
-                        {/* Table Header */}
-                        <View style={styles.tableHeader}>
-                            <Text style={styles.tableCellHeader}>Sr.</Text>
-                            <Text style={styles.tableCellHeader}>Name</Text>
-                            <Text style={styles.tableCellHeader}>Size</Text>
-                            <Text style={styles.tableCellHeader}>Grade</Text>
-                            <Text style={styles.tableCellHeader}>Box</Text>
-                            <Text style={styles.tableCellHeader}>Sq.Ft</Text>
-                            <Text style={styles.tableCellHeader}>Rate</Text>
-                            <Text style={styles.tableCellHeader}>Bill Rate</Text>
-                            <Text style={styles.tableCellHeader}>Insu.</Text>
-                            <Text style={styles.tableCellHeader}>Tax</Text>
-                            <Text style={styles.tableCellHeader}>Bill Amount</Text>
-                            <Text style={styles.tableCellHeader}>Cash Rate</Text>
-                            <Text style={styles.tableCellHeader}>Cash Amount</Text>
-                        </View>
-                        {/* Table Rows */}
-                        {ordersByCompany[company.id].map((order, index) => (
-                            <View key={order.id} style={styles.tableRow}>
-                                <Text style={styles.tableCell}>{order.srNo || index + 1}</Text>
-                                <Text style={styles.tableCell}>{order.name || 'N/A'}</Text>
-                                <Text style={styles.tableCell}>{order.size || 'N/A'}</Text>
-                                <Text style={styles.tableCell}>{order.grade || 'N/A'}</Text>
-                                <Text style={styles.tableCell}>{order.boxNumber || 0}</Text>
-                                <Text style={styles.tableCell}>{order.sqft || '0'}</Text>
-                                <Text style={styles.tableCell}>{order.rate || '0'}</Text>
-                                <Text style={styles.tableCell}>{order.billRate || '0'}</Text>
-                                <Text style={styles.tableCell}>{order.insu || '0'}</Text>
-                                <Text style={styles.tableCell}>{order.tax || '0'}</Text>
-                                <Text style={styles.tableCell}>{calculateBillAmount(order)}</Text>
-                                <Text style={styles.tableCell}>{calculateCashRate(order)}</Text>
-                                <Text style={styles.tableCell}>{calculateCashAmount(order)}</Text>
+                <View style={styles.customerInfo}>
+                    <View style={styles.infoRow}><Text style={styles.infoLabel}>Name:</Text><Text>{customer.name}</Text></View>
+                    <View style={styles.infoRow}><Text style={styles.infoLabel}>Type:</Text><Text>{customer.type}</Text></View>
+                    <View style={styles.infoRow}><Text style={styles.infoLabel}>Mobile No.:</Text><Text>{customer.mobile}</Text></View>
+                    <View style={styles.infoRow}><Text style={styles.infoLabel}>City:</Text><Text>{customer.city}</Text></View>
+                    <View style={styles.infoRow}><Text style={styles.infoLabel}>District:</Text><Text>{customer.district}</Text></View>
+                    <View style={styles.infoRow}><Text style={styles.infoLabel}>State:</Text><Text>{customer.state}</Text></View>
+                    <View style={styles.infoRow}><Text style={styles.infoLabel}>Address:</Text><Text>{customer.address}</Text></View>
+                    <View style={styles.infoRow}><Text style={styles.infoLabel}>Date:</Text><Text>{new Date(customer.date).toLocaleString()}</Text></View>
+                </View>
+
+                {customerCompanies.map(company => {
+                    const companyOrders = ordersByCompany[company.id] || [];
+                    const companyTotals = companyOrders.reduce((acc, order) => {
+                        const billAmount = calculateBillAmount(order);
+                        const cashRate = calculateCashRate(order);
+                        const cashAmount = calculateCashAmount(order);
+                        return {
+                            totalBox: acc.totalBox + Number(order.boxNumber || 0),
+                            totalBillAmount: acc.totalBillAmount + billAmount,
+                            totalCashAmount: acc.totalCashAmount + cashAmount,
+                        };
+                    }, { totalBox: 0, totalBillAmount: 0, totalCashAmount: 0 });
+
+                    totalBox += companyTotals.totalBox;
+                    totalBillAmount += companyTotals.totalBillAmount;
+                    totalCashAmount += companyTotals.totalCashAmount;
+
+                    return (
+                        <View key={company.id} style={styles.section}>
+                            <Text style={styles.companyTitle}>{company.name}</Text>
+                            <View style={styles.table}>
+                                <View style={styles.tableHeader}>
+                                    <Text style={styles.tableCellHeader}>Sr.</Text>
+                                    <Text style={styles.tableCellHeader}>Name</Text>
+                                    <Text style={styles.tableCellHeader}>Size</Text>
+                                    <Text style={styles.tableCellHeader}>Grade</Text>
+                                    <Text style={styles.tableCellHeader}>Box</Text>
+                                    <Text style={styles.tableCellHeader}>Sq.Ft</Text>
+                                    <Text style={styles.tableCellHeader}>Rate</Text>
+                                    <Text style={styles.tableCellHeader}>Bill Rate</Text>
+                                    <Text style={styles.tableCellHeader}>Insu.</Text>
+                                    <Text style={styles.tableCellHeader}>Tax</Text>
+                                    <Text style={styles.tableCellHeader}>Bill Amount</Text>
+                                    <Text style={styles.tableCellHeader}>Cash Rate</Text>
+                                    <Text style={styles.tableCellHeader}>Cash Amount</Text>
+                                </View>
+                                {companyOrders.map((order, index) => (
+                                    <View key={order.id} style={styles.tableRow}>
+                                        <Text style={styles.tableCell}>{index + 1}</Text>
+                                        <Text style={styles.tableCell}>{order.name || 'N/A'}</Text>
+                                        <Text style={styles.tableCell}>{order.size || 'N/A'}</Text>
+                                        <Text style={styles.tableCell}>{order.grade || 'N/A'}</Text>
+                                        <Text style={styles.tableCell}>{order.boxNumber || 0}</Text>
+                                        <Text style={styles.tableCell}>{order.sqft || '0'}</Text>
+                                        <Text style={styles.tableCell}>{order.rate || '0'}</Text>
+                                        <Text style={styles.tableCell}>{order.billRate || '0'}</Text>
+                                        <Text style={styles.tableCell}>{order.insu || '0'}</Text>
+                                        <Text style={styles.tableCell}>{order.tax || '0'}</Text>
+                                        <Text style={styles.tableCell}>{calculateBillAmount(order).toFixed(2)}</Text>
+                                        <Text style={styles.tableCell}>{calculateCashRate(order).toFixed(2)}</Text>
+                                        <Text style={styles.tableCell}>{calculateCashAmount(order).toFixed(2)}</Text>
+                                    </View>
+                                ))}
+                                {/* Company Summary */}
+                                <View style={styles.summaryRow}>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}>{companyTotals.totalBox}</Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}>{companyTotals.totalBillAmount.toFixed(2)}</Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}>{companyTotals.totalCashAmount.toFixed(2)}</Text>
+                                </View>
+                                <View style={styles.summaryRow}> 
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}></Text>
+                                    <Text style={styles.tableCell}>{(companyTotals.totalBillAmount + companyTotals.totalCashAmount).toFixed(2)}</Text>
+                                </View>
                             </View>
-                        ))}
-                    </View>
+                        </View>
+                    );
+                })}
+
+                <View style={styles.TotalSection}>
+                    <Text style={styles.highlight}>Total Bill Amount: {totalBillAmount.toFixed(2)}</Text>
+                    <Text style={styles.highlight}>Total Cash Amount: {totalCashAmount.toFixed(2)}</Text>
+                    <Text style={styles.FinalHighlight}>Total Amount: {(totalBillAmount + totalCashAmount).toFixed(2)}</Text>
                 </View>
-            ))}
-        </Page>
-    </Document>
-);
+            </Page>
+        </Document>
+    );
+};
 
 export default ReceiptPDF;

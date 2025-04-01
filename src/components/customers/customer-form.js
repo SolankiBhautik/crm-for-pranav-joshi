@@ -96,6 +96,9 @@ export default function CustomerForm({ onSubmit, customer = {} }) {
               <SelectContent>
                 <SelectItem value="BUILDER">Builder</SelectItem>
                 <SelectItem value="BUNGLOW">Bunglow</SelectItem>
+                <SelectItem value="Er.">Er.</SelectItem>
+                <SelectItem value="Architect">Architect</SelectItem>
+                <SelectItem value="Contractor">Contractor</SelectItem>
               </SelectContent>
             </Select>
           </div>

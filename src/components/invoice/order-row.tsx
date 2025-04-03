@@ -48,8 +48,12 @@ export function OrderRow({ order, isEditing, orderInvoice, calculateBillAmount, 
         <Select value={orderInvoice.sqft || "27.55"} onValueChange={value => onInvoiceDataChange(order.id, "sqft", value)}>
           <SelectTrigger className="h-8 w-[100px]"><SelectValue /></SelectTrigger>
           <SelectContent>
+            <SelectItem value="46.50">46.50</SelectItem>
             <SelectItem value="27.55">27.55</SelectItem>
-            <SelectItem value="15.5">15.5</SelectItem>
+            <SelectItem value="25.83">25.83</SelectItem>
+            <SelectItem value="20.68">20.68</SelectItem>
+            <SelectItem value="15.50">15.50</SelectItem>
+            <SelectItem value="12.91">12.91</SelectItem>
             <SelectItem value="8.67">8.67</SelectItem>
           </SelectContent>
         </Select>
@@ -64,6 +68,7 @@ export function OrderRow({ order, isEditing, orderInvoice, calculateBillAmount, 
             <SelectItem value="0.5">0.50%</SelectItem>
             <SelectItem value="0.3">0.30%</SelectItem>
             <SelectItem value="0.25">0.25%</SelectItem>
+            <SelectItem value="0">0%</SelectItem>
           </SelectContent>
         </Select>
       ) : orderInvoice.insu || "0.5"}</TableCell>

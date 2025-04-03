@@ -4,7 +4,12 @@ import { Card, CardContent } from "@/components/ui/card"
 
 export function InvoiceTotals({ ordersByCompany, invoiceData }) {
   const calculateBillAmount = (order, orderInvoice) => {
-    const sqft = Number(orderInvoice.sqft || 0)
+    let sqft;
+    if (order.size == '12x18') {
+      sqft = 1;
+    } else {
+      sqft = Number(orderInvoice.sqft || 0);
+    }
     const boxNumber = Number(order.boxNumber || 0)
     const billRate = Number(orderInvoice.billRate || 0)
     const insuPercent = Number(orderInvoice.insu || 0)
@@ -22,7 +27,14 @@ export function InvoiceTotals({ ordersByCompany, invoiceData }) {
       const orderInvoice = invoiceData[order.id] || {}
       const billAmount = calculateBillAmount(order, orderInvoice)
       const cashRate = Number(orderInvoice.rate || 0) - Number(orderInvoice.billRate || 0)
-      const cashAmount = Number(order.boxNumber || 0) * Number(orderInvoice.sqft || 0) * cashRate
+      let cashAmount;
+
+      if (order.size == "12x18"){
+        cashAmount = Number(order.boxNumber || 0) *  cashRate
+      } else {
+        cashAmount = Number(order.boxNumber || 0) * Number(orderInvoice.sqft || 0) * cashRate
+      } 
+
       return {
         totalBox: sum.totalBox + Number(order.boxNumber || 0),
         totalBillAmount: sum.totalBillAmount + billAmount,

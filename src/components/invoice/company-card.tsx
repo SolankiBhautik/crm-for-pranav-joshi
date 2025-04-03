@@ -31,7 +31,13 @@ export function CompanyCard({ company, customer, orders, invoiceData, onInvoiceD
   })
 
   const calculateBillAmount = useCallback((order, orderInvoice) => {
-    const sqft = Number(orderInvoice.sqft || 0)
+    let sqft;
+    if (order.size === '12x18') {
+      sqft = 1;
+    } else {
+      sqft = Number(orderInvoice.sqft || 0)
+    }
+    
     const boxNumber = Number(order.boxNumber || 0)
     const billRate = Number(orderInvoice.billRate || 0)
     const insuPercent = Number(orderInvoice.insu || 0)

@@ -25,7 +25,13 @@ export function OrderRow({ order, isEditing, orderInvoice, calculateBillAmount, 
 
   const billAmount = calculateBillAmount(order, orderInvoice)
   const cashRate = Number(orderInvoice.rate || 0) - Number(orderInvoice.billRate || 0)
-  const cashAmount = Number(order.boxNumber || 0) * Number(orderInvoice.sqft || 0) * cashRate
+
+  let cashAmount = 0
+  if(order.size === '12x18'){
+    cashAmount = Number(order.boxNumber || 0) * cashRate
+  } else {
+    cashAmount = Number(order.boxNumber || 0) * Number(orderInvoice.sqft || 0) * cashRate
+  }
 
   return (
     <TableRow>

@@ -51,7 +51,14 @@ const calculateBillAmount = (order) => {
     const billRate = Number(order.billRate || 0);
     const insu = Number(order.insu || 0) / 100;
     const tax = Number(order.tax || 0) / 100;
-    const baseAmount = boxNumber * sqft * billRate;
+
+    let baseAmount = 0
+    if (order.size === '12x18') {
+        baseAmount = boxNumber * billRate;
+    } else {
+        baseAmount = boxNumber * sqft * billRate;
+    }
+
     const insuAmount = baseAmount * insu;
     const subtotal = baseAmount + insuAmount;
     const taxAmount = subtotal * tax;
@@ -64,7 +71,12 @@ const calculateCashRate = (order) => {
 
 const calculateCashAmount = (order) => {
     const boxNumber = Number(order.boxNumber || 0);
-    const sqft = Number(order.sqft || 0);
+    let sqft;
+    if (order.size === '12x18') {
+        sqft = 1;
+    } else {
+        sqft = Number(order.sqft || 0);
+    }
     const cashRate = Number(order.rate || 0) - Number(order.billRate || 0);
     return boxNumber * sqft * cashRate;
 };
@@ -161,7 +173,7 @@ const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => {
                                     <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}>{companyTotals.totalCashAmount.toFixed(2)}</Text>
                                 </View>
-                                <View style={styles.LastSummaryRow}> 
+                                <View style={styles.LastSummaryRow}>
                                     <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}></Text>

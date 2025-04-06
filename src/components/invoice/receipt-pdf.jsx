@@ -187,15 +187,15 @@ const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => {
 
                 <View style={styles.totalSection}>
                     <View style={styles.amountContainer}>
-                        <Text style={styles.title}>Total Bill</Text>
+                        <Text style={styles.title}>Bill Amount</Text>
                         <Text style={styles.amount}>{totalBillAmount.toFixed(2)}</Text>
                     </View>
                     <View style={styles.amountContainer}>
-                        <Text style={styles.title}>Total Cash</Text>
+                        <Text style={styles.title}>Cash Amount</Text>
                         <Text style={styles.amount}>{totalCashAmount.toFixed(2)}</Text>
                     </View>
                     <View style={styles.amountContainer}>
-                        <Text style={styles.title}>Grand Total</Text>
+                        <Text style={styles.title}>Total Amount</Text>
                         <Text style={styles.amount}>{(totalBillAmount + totalCashAmount).toFixed(2)}</Text>
                     </View>
                 </View>

@@ -15,7 +15,11 @@ const styles = StyleSheet.create({
     tableHeader: { backgroundColor: '#f5f5f5', flexDirection: 'row', borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#000', borderTopLeftRadius: 4, borderTopRightRadius: 4 },
     tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#000', fontSize: 8 },
     tableCell: { padding: 5, flex: 1, textAlign: 'center', fontSize: 8 },
+    tableCellSmall: { padding: 5, flex: .5, textAlign: 'center', fontSize: 8 },
+    tableCellBig: { padding: 5, flex: 1.5, textAlign: 'center', fontSize: 8 },
     tableCellHeader: { padding: 5, flex: 1, textAlign: 'center', fontWeight: 'bold', fontSize: 8 },
+    tableCellHeaderSmall: { padding: 5, flex: .5, textAlign: 'center', fontWeight: 'bold', fontSize: 8 },
+    tableCellHeaderBig: { padding: 5, flex: 1.5, textAlign: 'center', fontWeight: 'bold', fontSize: 8 },
     summaryRow: { flexDirection: 'row', backgroundColor: '#e0e0e0', fontSize: 8, fontWeight: 'bold', },
     LastSummaryRow: { flexDirection: 'row', backgroundColor: '#e0e0e0', fontSize: 8, fontWeight: 'bold', borderBottomLeftRadius: 4, borderBottomRightRadius: 4 },
     finalSummaryRow: { flexDirection: 'row', backgroundColor: '#e0e0e0', fontSize: 8, fontWeight: 'bold' },
@@ -126,7 +130,7 @@ const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => {
                             <Text style={styles.companyTitle}>{company.name}</Text>
                             <View style={styles.table}>
                                 <View style={styles.tableHeader}>
-                                    <Text style={styles.tableCellHeader}>Sr.</Text>
+                                    <Text style={styles.tableCellHeaderSmall}>Sr.</Text>
                                     <Text style={styles.tableCellHeader}>Name</Text>
                                     <Text style={styles.tableCellHeader}>Size</Text>
                                     <Text style={styles.tableCellHeader}>Grade</Text>
@@ -138,11 +142,11 @@ const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => {
                                     <Text style={styles.tableCellHeader}>Tax</Text>
                                     <Text style={styles.tableCellHeader}>Bill Amount</Text>
                                     <Text style={styles.tableCellHeader}>Cash Rate</Text>
-                                    <Text style={styles.tableCellHeader}>Cash Amount</Text>
+                                    <Text style={styles.tableCellHeaderBig}>Cash Amount</Text>
                                 </View>
                                 {companyOrders.map((order, index) => (
                                     <View key={order.id} style={styles.tableRow}>
-                                        <Text style={styles.tableCell}>{index + 1}</Text>
+                                        <Text style={styles.tableCellSmall}>{index + 1}</Text>
                                         <Text style={styles.tableCell}>{order.name || 'N/A'}</Text>
                                         <Text style={styles.tableCell}>{order.size || 'N/A'}</Text>
                                         <Text style={styles.tableCell}>{order.grade || 'N/A'}</Text>
@@ -154,7 +158,7 @@ const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => {
                                         <Text style={styles.tableCell}>{order.tax || '0'}</Text>
                                         <Text style={styles.tableCell}>{calculateBillAmount(order).toFixed(2)}</Text>
                                         <Text style={styles.tableCell}>{calculateCashRate(order).toFixed(2)}</Text>
-                                        <Text style={styles.tableCell}>{calculateCashAmount(order).toFixed(2)}</Text>
+                                        <Text style={styles.tableCellBig}>{calculateCashAmount(order).toFixed(2)}</Text>
                                     </View>
                                 ))}
                                 {/* Company Summary */}
@@ -171,10 +175,9 @@ const ReceiptPDF = ({ customer, ordersByCompany, customerCompanies }) => {
                                     <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}>{companyTotals.totalBillAmount.toFixed(2)}</Text>
                                     <Text style={styles.tableCell}></Text>
-                                    <Text style={styles.tableCell}>{companyTotals.totalCashAmount.toFixed(2)}</Text>
+                                    <Text style={styles.tableCellBig}>{companyTotals.totalCashAmount.toFixed(2)}</Text>
                                 </View>
                                 <View style={styles.LastSummaryRow}>
-                                    <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}></Text>
                                     <Text style={styles.tableCell}></Text>

@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const authenticated = localStorage.getItem('isAuthenticated');
+    const authenticated = localStorage.getItem('isAuth');
     setIsAuthenticated(authenticated === 'true');
     setLoading(false);
   }, []);
@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
   const login = (password) => {
     if (password === process.env.NEXT_PUBLIC_SITE_PASSWORD) {
       setIsAuthenticated(true);
-      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('isAuth', 'true');
       return true;
     }
     return false;
@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('isAuth');
   };
 
   return (
